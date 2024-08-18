@@ -1,0 +1,29 @@
+﻿  cmdparser.h
+  level.cpp
+  main.cpp
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\main.cpp(13,1): warning C4192: automatically excluding 'ISequentialStream' while importing type library 'msxml6.dll'
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\main.cpp(13,1): warning C4192: automatically excluding '_FILETIME' while importing type library 'msxml6.dll'
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\main.cpp(273,13): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(63): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(65): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(55): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(58): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(46): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(49): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(37): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(40): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(149): warning C4715: 'Level::get_next_position': not all control paths return a value
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(164): warning C4715: 'Level::box_next_position': not all control paths return a value
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(153): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(156): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(159): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(162): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(138): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(141): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(144): warning C4172: returning address of local variable or temporary
+C:\Users\12001732\Documents\cprogrameren1\puzzlegame\puzzlegame\level.cpp(147): warning C4172: returning address of local variable or temporary
+  All 969 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  puzzlegame.vcxproj -> C:\Users\12001732\Documents\cprogrameren1\puzzlegame\x64\Release\puzzlegame.exe
