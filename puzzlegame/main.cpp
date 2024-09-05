@@ -21,9 +21,6 @@
 #include <optional>
 
 
-using namespace sda;
-using namespace sda::utils;
-
 
 bool isFileEmpty(const std::string& filename);
 std::vector<Level> load_slc_file(const std::string& path);
@@ -32,6 +29,8 @@ std::vector<Level> ParseLevels(MSXML2::IXMLDOMNodePtr pLevelCollection);
 SDL_Window* create_window(int width, int height, bool fullscreen);
 Tile load_tileset(SDL_Renderer* renderer, const std::string& path, int width, int height, int effective_height, int offset, int png_width, int png_height, int screen_width, int screen_height);
 TTF_Font* load_font(const std::string& path, int size);
+void handle_event(const SDL_Event& event, bool& running, Level& level, const Level& referenceLevel, bool& skipLevel);
+void render_frame(SDL_Renderer* renderer, Renderer& render, Level& level);
 
 template <typename Iterator>
 std::optional<typename Iterator::value_type> next_level(Iterator& it, const Iterator& end);
@@ -41,10 +40,10 @@ int main(int argc, char** argv)
 {
 	CmdParser parser;
 
-	parser.addSwitch("--input", "input xml level file", "", false);
-	parser.addSwitch("--width", "screen width", "1920");
-	parser.addSwitch("--height", "screen height", "1080");
-	parser.addSwitch("--fullscreen", "fullscreen mode", "false", false);
+	parser.addSwitch("--input", "-i", "input xml level file", "");
+	parser.addSwitch("--width", "-w", "screen width", "1920");
+	parser.addSwitch("--height", "-h", "screen height", "1080");
+	parser.addSwitch("--fullscreen", "-f", "fullscreen mode", "false", false);
 	parser.parse(argc, argv);
 	std::string inputFile = parser.value("input");
 	int width = parser.value_to_int("width");
@@ -102,80 +101,46 @@ int main(int argc, char** argv)
 		}
 
 		try {
+			Tile bigTileSet = load_tileset(renderer, "Tilesheet/sokoban_tilesheet@2.png", 128, 128, 80, 48, 1664, 1024, width, height);
+			Tile smallTileSet = load_tileset(renderer, "Tilesheet/sokoban_tilesheet.png", 64, 64, 40, 24, 832, 512, width, height);
+			std::unique_ptr<TTF_Font, decltype(&TTF_CloseFont)> font(load_font("roboto-regular.ttf", 20), TTF_CloseFont);
 
-			Tile big_set = load_tileset(renderer, "Tilesheet/sokoban_tilesheet@2.png", 128, 128, 80, 48, 1664, 1024, width, height);
-			Tile small_set = load_tileset(renderer, "Tilesheet/sokoban_tilesheet.png", 64, 64, 40, 24, 832, 512, width, height);
-			TTF_Font* font = load_font("roboto-regular.ttf", 20);
+			Renderer render(renderer, bigTileSet, smallTileSet, font.get());
 
-			Renderer render(renderer, big_set, small_set, font);
+			auto levelsIt = levels.begin();
+			auto levelsEnd = levels.end();
+			std::optional<Level> optionalLevel = next_level(levelsIt, levelsEnd);
 
-			auto levels_it = levels.begin();
-			auto levels_end = levels.end();
+			if (optionalLevel) {
 
-			std::optional<Level> optional_level = next_level(levels_it, levels_end);
-			if (optional_level) {
-				Level reference_level = *optional_level;
-				Level level = reference_level.clone();
+
+				Level referenceLevel = *optionalLevel;
+				Level currentLevel = referenceLevel.clone();
+
 				bool running = true;
-				bool skip = false;
-
+				bool skipLevel = false;
 				SDL_Event event;
+
 				while (running) {
-					if (level.is_completed() || skip) {
-						optional_level = next_level(levels_it, levels_end);
-						if (optional_level) {
-							reference_level = *optional_level;
-							level = reference_level.clone();
-							skip = false;
+					if (currentLevel.is_completed() || skipLevel) {
+						optionalLevel = next_level(levelsIt, levelsEnd);
+						if (optionalLevel) {
+							referenceLevel = *optionalLevel;
+							currentLevel = referenceLevel.clone();
+							skipLevel = false;
 						}
 						else {
 							break;
 						}
 					}
 
-					SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-					SDL_RenderClear(renderer);
-					render.render(renderer, &level);
-					SDL_RenderPresent(renderer);
+					render_frame(renderer, render, currentLevel);
 
 					while (SDL_PollEvent(&event)) {
-						switch (event.type) {
-						case SDL_QUIT:
-							running = false;
-							break;
-						case SDL_KEYDOWN:
-							switch (event.key.keysym.sym) {
-							case SDLK_ESCAPE:
-								running = false;
-								break;
-							case SDLK_LEFT:
-								level.step(Direction::Left);
-								break;
-							case SDLK_RIGHT:
-								level.step(Direction::Right);
-								break;
-							case SDLK_UP:
-								level.step(Direction::Up);
-								break;
-							case SDLK_DOWN:
-								level.step(Direction::Down);
-								break;
-							case SDLK_r:
-								level = reference_level.clone();
-								break;
-							case SDLK_n:
-								skip = true;
-								break;
-							}
-							break;
-						default:
-							break;
-						}
+						handle_event(event, running, currentLevel, referenceLevel, skipLevel);
 					}
 				}
 			}
-
-			TTF_CloseFont(font);
 		}
 		catch (const std::exception& e) {
 			std::cerr << e.what() << std::endl;
@@ -408,5 +373,44 @@ std::optional<typename Iterator::value_type> next_level(Iterator& it, const Iter
 	}
 	else {
 		return std::nullopt;
+	}
+}
+void render_frame(SDL_Renderer* renderer, Renderer& render, Level& level) {
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+	render.render(renderer, &level);
+	SDL_RenderPresent(renderer);
+}
+
+void handle_event(const SDL_Event& event, bool& running, Level& level, const Level& referenceLevel, bool& skipLevel) {
+	if (event.type == SDL_QUIT) {
+		running = false;
+	}
+	else if (event.type == SDL_KEYDOWN) {
+		switch (event.key.keysym.sym) {
+		case SDLK_ESCAPE:
+			running = false;
+			break;
+		case SDLK_LEFT:
+			level.step(Direction::Left);
+			break;
+		case SDLK_RIGHT:
+			level.step(Direction::Right);
+			break;
+		case SDLK_UP:
+			level.step(Direction::Up);
+			break;
+		case SDLK_DOWN:
+			level.step(Direction::Down);
+			break;
+		case SDLK_r:
+			level = referenceLevel.clone();
+			break;
+		case SDLK_n:
+			skipLevel = true;
+			break;
+		default:
+			break;
+		}
 	}
 }

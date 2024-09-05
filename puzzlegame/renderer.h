@@ -16,17 +16,26 @@ public:
 	Renderer(SDL_Renderer* renderer, const Tile& big_set, const Tile& small_set, TTF_Font* font)
 		: renderer(renderer), big_set(big_set), small_set(small_set), font(font) {}
 
+
 	void draw_text(const std::string& text, int x, int y, SDL_Color color, int text_width, int text_height) {
 		SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+		if (!surface) {
+			std::cerr << "Failed to create surface: " << TTF_GetError() << std::endl;
+			return;
+		}
+
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 		SDL_FreeSurface(surface);
-
+		if (!texture) {
+			std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+			return;
+		}
 		SDL_QueryTexture(texture, nullptr, nullptr, &text_width, &text_height);
-
 		SDL_Rect dst_rect = { x, y, text_width, text_height };
 		SDL_RenderCopy(renderer, texture, nullptr, &dst_rect);
 		SDL_DestroyTexture(texture);
 	}
+
 	void draw_tile(const Tile& tileset, int col, int row, int x, int y) {
 		SDL_Rect src_rect = tileset.get_tile_rect(col, row);
 		SDL_Rect dst_rect = { x, y, src_rect.w, src_rect.h };
